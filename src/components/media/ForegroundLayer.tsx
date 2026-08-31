@@ -22,7 +22,6 @@ import {
   scenes,
   type ForegroundPlacement,
 } from '@/config/scenes';
-import { mediaUrl } from '@/config/media';
 import { HANDOFF, ramp, rampOut } from '@/config/choreography';
 import { getSceneTop, subscribeFrame, useTimelineState } from '@/hooks/useActiveScene';
 
@@ -230,7 +229,7 @@ function ForegroundLayerImpl({ animate }: ForegroundLayerProps) {
                   <img
                     key={key}
                     ref={(element) => setObjectRef(key, placement, element)}
-                    src={mediaUrl(FOREGROUND_ASSETS[placement.asset])}
+                    src={FOREGROUND_ASSETS[placement.asset]}
                     alt={placement.alt}
                     aria-hidden={decorative || undefined}
                     role={decorative ? 'presentation' : undefined}

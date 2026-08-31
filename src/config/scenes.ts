@@ -6,8 +6,6 @@
  * hard-code a path or a string.
  */
 
-import { mediaUrl } from '@/config/media';
-
 export type SceneAlignment = 'left' | 'center' | 'right';
 
 /** Parallax bands. Values are the % of a scroll pass the object travels. */
@@ -379,9 +377,7 @@ const SCENE_SEEDS: SceneSeed[] = [
  */
 export const scenes: SceneDefinition[] = SCENE_SEEDS.map((seed) => ({
   ...seed,
-  poster: mediaUrl(seed.poster),
-  idleVideo: mediaUrl(seed.idleVideo),
-  foregrounds: seed.composition?.map((placement) => mediaUrl(FOREGROUND_ASSETS[placement.asset])),
+  foregrounds: seed.composition?.map((placement) => FOREGROUND_ASSETS[placement.asset]),
 }));
 
 export const sceneCount = scenes.length;

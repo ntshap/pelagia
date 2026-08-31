@@ -8,7 +8,6 @@
  */
 import { memo, useCallback, useRef, type PointerEvent, type SyntheticEvent } from 'react';
 import { EDITORIAL_VH, FOREGROUND_ASSETS, type ResearchCard } from '@/config/scenes';
-import { mediaUrl } from '@/config/media';
 import { useReveal } from '@/hooks/useReveal';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 
@@ -78,7 +77,7 @@ function ResearchCardBlockImpl({ card, flip = false, anchor = false }: ResearchC
               style={{ transform: 'translate3d(0,0,0) scale(1)' }}
             >
               <img
-                src={mediaUrl(FOREGROUND_ASSETS[card.asset])}
+                src={FOREGROUND_ASSETS[card.asset]}
                 alt={card.alt}
                 loading="lazy"
                 decoding="async"

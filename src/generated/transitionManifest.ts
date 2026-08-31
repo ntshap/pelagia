@@ -9,8 +9,6 @@
  * transition to a poster crossfade.
  */
 
-import { mediaUrl } from '@/config/media';
-
 export type TransitionSequenceId =
   | 'transition-01-02'
   | 'transition-02-03'
@@ -40,7 +38,7 @@ const FRAMES_PER_SEQUENCE = 124;
 function framePaths(id: TransitionSequenceId): string[] {
   return Array.from(
     { length: FRAMES_PER_SEQUENCE },
-    (_, i) => mediaUrl(`/sea/transitions/${id}/frame_${String(i + 1).padStart(6, '0')}.webp`),
+    (_, i) => `/sea/transitions/${id}/frame_${String(i + 1).padStart(6, '0')}.webp`,
   );
 }
 
