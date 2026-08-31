@@ -220,6 +220,9 @@ function TransitionCanvasImpl({ enabled, className }: TransitionCanvasProps) {
   /* Prime the sequence the moment it becomes current. */
   useEffect(() => {
     if (!sequence) return;
+    // Re-entering a sequence re-queues any frames still missing, so a failed
+    // first pass repairs itself instead of staying broken until a reload.
+    sequence.repair(PRIORITY.adjacent - 7);
     sequence.requestAnchors(PRIORITY.adjacent - 8);
     sequence.requestSpread(13, PRIORITY.adjacent - 9);
   }, [sequence]);

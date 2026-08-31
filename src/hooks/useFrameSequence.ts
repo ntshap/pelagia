@@ -128,6 +128,17 @@ export const PRIORITY = {
  * ------------------------------------------------------------------ */
 type FrameStatus = 'idle' | 'loading' | 'loaded' | 'failed';
 
+/* ------------------------------------------------------------------ *
+ * Failure handling
+ *
+ * A dropped request must not break a sequence for the rest of the page
+ * session. A failed frame is retried a bounded number of times with a short
+ * increasing delay, then reported and left failed. Re-entering a sequence
+ * re-queues any frames still missing, so a second pass repairs itself.
+ * ------------------------------------------------------------------ */
+const MAX_ATTEMPTS = 3;
+const RETRY_BASE_DELAY_MS = 350;
+
 export class FrameSequence {
   readonly id: string;
   readonly urls: readonly string[];
@@ -136,10 +147,12 @@ export class FrameSequence {
   private readonly images: (HTMLImageElement | null)[];
   private readonly status: FrameStatus[];
   private readonly tasks: (ScheduledTask | null)[];
+  private readonly attempts: number[];
   private loaded = 0;
   private failed = 0;
   private disposed = false;
   private onProgress: ((loaded: number, total: number) => void) | null = null;
+  private onFailure: ((index: number, url: string, attempts: number) => void) | null = null;
 
   constructor(id: string, urls: readonly string[]) {
     this.id = id;
@@ -148,6 +161,7 @@ export class FrameSequence {
     this.images = new Array(this.length).fill(null);
     this.status = new Array<FrameStatus>(this.length).fill('idle');
     this.tasks = new Array(this.length).fill(null);
+    this.attempts = new Array(this.length).fill(0);
   }
 
   get loadedCount(): number {
@@ -167,6 +181,11 @@ export class FrameSequence {
     this.onProgress = handler;
   }
 
+  /** Called when a frame exhausts its attempts and stays failed. */
+  setFailureHandler(handler: ((index: number, url: string, attempts: number) => void) | null): void {
+    this.onFailure = handler;
+  }
+
   private clampIndex(index: number): number {
     if (this.length === 0) return 0;
     if (index < 0) return 0;
@@ -180,7 +199,13 @@ export class FrameSequence {
     const i = this.clampIndex(index);
     const status = this.status[i];
 
-    if (status === 'loaded' || status === 'failed') return;
+    if (status === 'loaded') return;
+
+    // A failed frame is not abandoned: re-queue it for a bounded retry.
+    if (status === 'failed') {
+      if (this.attempts[i] >= MAX_ATTEMPTS) return;
+      this.status[i] = 'idle';
+    }
 
     if (status === 'loading') {
       const existing = this.tasks[i];
@@ -212,12 +237,27 @@ export class FrameSequence {
           this.images[index] = image;
           this.status[index] = 'loaded';
           this.loaded += 1;
+          this.onProgress?.(this.loaded, this.length);
+          resolve();
         } else {
-          this.status[index] = 'failed';
-          this.failed += 1;
+          this.attempts[index] += 1;
+          if (this.attempts[index] < MAX_ATTEMPTS) {
+            // Bounded retry with a short increasing delay.
+            this.status[index] = 'idle';
+            const delay = RETRY_BASE_DELAY_MS * this.attempts[index];
+            window.setTimeout(() => {
+              if (!this.disposed && this.status[index] === 'idle') {
+                this.request(index, PRIORITY.window);
+              }
+            }, delay);
+          } else {
+            this.status[index] = 'failed';
+            this.failed += 1;
+            this.onFailure?.(index, this.urls[index], this.attempts[index]);
+          }
+          this.onProgress?.(this.loaded, this.length);
+          resolve();
         }
-        this.onProgress?.(this.loaded, this.length);
-        resolve();
       };
 
       image.onload = () => {
@@ -234,6 +274,19 @@ export class FrameSequence {
       image.onerror = () => settle(false);
       image.src = this.urls[index];
     });
+  }
+
+  /**
+   * Re-queue every frame that is still missing or failed, so re-entering a
+   * sequence repairs itself instead of staying broken until a page reload.
+   */
+  repair(priority: number = PRIORITY.window): void {
+    if (this.disposed || this.length === 0) return;
+    for (let i = 0; i < this.length; i += 1) {
+      if (this.status[i] === 'loaded' || this.status[i] === 'loading') continue;
+      if (this.status[i] === 'failed' && this.attempts[i] >= MAX_ATTEMPTS) continue;
+      this.request(i, priority);
+    }
   }
 
   /** The three frames that make a sequence feel present before it is filled. */
