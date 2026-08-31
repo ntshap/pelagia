@@ -1,0 +1,377 @@
+@import 'tailwindcss';
+
+/* ------------------------------------------------------------------ *
+ * PELAGIA design tokens
+ *
+ * Geist carries everything. Silkscreen is reserved for the large
+ * instrument readouts — the hero stat and the impact figures — and is
+ * never used below ~2rem, where a pixel face stops being legible.
+ * ------------------------------------------------------------------ */
+@theme {
+  --color-abyss: #02070b;
+  --color-navy: #061a2b;
+  --color-ocean: #0b68e8;
+  --color-cyan: #55e6ea;
+  --color-coral: #ff796b;
+  --color-white-sea: #f6fafc;
+
+  /* The interface is white-on-dark with white glass; `paper` is the single
+   * type colour every component already references. */
+  --color-paper: #ffffff;
+  --color-ink: #010101;
+
+  --color-haze: #a8bccb;
+  --color-haze-dim: #8da3b4;
+
+  --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-pixel: 'Silkscreen', cursive;
+
+  --ease-depth: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ------------------------------------------------------------------ *
+ * Scroll timeline geometry — the single source of truth for page length.
+ * 8 scene holds + 7 transition spacers form the media spine.
+ * ------------------------------------------------------------------ */
+:root {
+  --hold-height: 100vh;
+  --transition-height: 70vh;
+  --stage-fade: 260ms;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background-color: var(--color-abyss);
+  /* Native scrolling only. No scroll snap, no hijacking, no smooth-scroll lib. */
+  scroll-behavior: auto;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-abyss);
+  color: var(--color-paper);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* GSAP measures the document; never let a stray element widen it. */
+#root {
+  isolation: isolate;
+}
+
+::selection {
+  background-color: rgb(255 255 255 / 0.24);
+  color: #ffffff;
+}
+
+:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 3px;
+  border-radius: 999px;
+}
+
+.pelagia-skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 200;
+  transform: translateY(-200%);
+  background: #ffffff;
+  color: var(--color-ink);
+  padding: 0.75rem 1.5rem;
+  border: 0;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: transform 200ms var(--ease-depth);
+}
+.pelagia-skip-link:focus {
+  transform: translateY(0);
+}
+
+/* ------------------------------------------------------------------ *
+ * Typographic primitives
+ * ------------------------------------------------------------------ */
+.eyebrow {
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-haze);
+}
+
+.metadata {
+  font-size: 0.8125rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: rgb(255 255 255 / 0.6);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Headlines. Nothing landing here may also carry a Tailwind font-weight
+ * utility — this rule is unlayered and would silently win. */
+.display {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  text-wrap: balance;
+}
+
+/* Running numerals — depth, indices. Geist, because they update per frame
+ * and a pixel face shimmers. */
+.numeral {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Static instrument readouts, set large. */
+.pixel-num {
+  font-family: var(--font-pixel);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.measure {
+  max-width: 34ch;
+}
+
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------------ *
+ * Controls — one dark gradient pill, one quiet outline beside it.
+ * ------------------------------------------------------------------ */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  min-height: 3rem;
+  padding-inline: 1.75rem;
+  border: 0;
+  border-radius: 999px;
+  background-image: linear-gradient(to bottom, #2b2b2b, #101010);
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    opacity 300ms var(--ease-depth),
+    transform 320ms var(--ease-depth);
+}
+.pill:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+.pill:active {
+  transform: translateY(0);
+}
+
+.pill-quiet {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  min-height: 3rem;
+  padding-inline: 1.75rem;
+  border: 1px solid rgb(255 255 255 / 0.25);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.1);
+  backdrop-filter: blur(16px);
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color 300ms var(--ease-depth),
+    border-color 300ms var(--ease-depth),
+    transform 320ms var(--ease-depth);
+}
+.pill-quiet:hover {
+  border-color: rgb(255 255 255 / 0.5);
+  background: rgb(255 255 255 / 0.18);
+  transform: translateY(-2px);
+}
+.pill-quiet:active {
+  transform: translateY(0);
+}
+
+/* ------------------------------------------------------------------ *
+ * Glass surface — the one card treatment on the site.
+ * ------------------------------------------------------------------ */
+.glass-card {
+  position: relative;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  background: rgb(255 255 255 / 0.1);
+  backdrop-filter: blur(16px);
+  color: #ffffff;
+  transition:
+    background-color 420ms var(--ease-depth),
+    transform 520ms var(--ease-depth);
+}
+.glass-card:hover {
+  background: rgb(255 255 255 / 0.16);
+  transform: translateY(-4px);
+}
+
+.glass-card .card-kicker {
+  display: block;
+  color: rgb(255 255 255 / 0.6);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.glass-card .card-title {
+  margin: 1.5rem 0 0;
+  color: #ffffff;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.glass-card .card-body {
+  margin: 1rem 0 0;
+  color: rgb(255 255 255 / 0.7);
+  font-size: 0.95rem;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+/* ------------------------------------------------------------------ *
+ * Page shell
+ *
+ * One content container for the whole site.
+ * ------------------------------------------------------------------ */
+.page-shell {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 112rem;
+  padding-inline: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .page-shell {
+    padding-inline: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .page-shell {
+    padding-inline: 3rem;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Entrance
+ *
+ * The fixed interface has no scroll trigger to hang off, so it animates
+ * once on mount. Scene and editorial content is handled by GSAP in
+ * `useReveal`; the scrubbed frame sequences are never animated here —
+ * they are driven only by scroll position.
+ * ------------------------------------------------------------------ */
+@keyframes reveal-down {
+  from {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.reveal-down {
+  animation: reveal-down 720ms var(--ease-depth) both;
+}
+
+.reveal-up {
+  animation: reveal-up 720ms var(--ease-depth) both;
+}
+
+/* ------------------------------------------------------------------ *
+ * Media stage
+ * ------------------------------------------------------------------ */
+.stage-media {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.stage-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Only set while an element is genuinely mid-animation. */
+.is-animating {
+  will-change: transform, opacity;
+}
+
+/* ------------------------------------------------------------------ *
+ * Reduced motion — the full narrative stays, the motion does not.
+ * ------------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  /* Cross-fades between posters are the one motion we keep, kept gentle. */
+  .rm-fade {
+    transition-duration: 320ms !important;
+  }
+}
+
+/* Custom scrollbar keeps the chrome quiet on desktop. */
+@supports selector(::-webkit-scrollbar) {
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #02070b;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #2a3a41;
+    border-radius: 999px;
+    border: 3px solid #02070b;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #46585f;
+  }
+}
