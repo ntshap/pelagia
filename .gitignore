@@ -112,6 +112,3 @@ temp/
 client/public/__manus__/version.json
 .project-config.json
 
-# Large idle videos: kept on disk in public/sea/idle/ and served from there;
-# excluded from checkpoints due to the 1MB-per-file commit limit.
-public/sea/idle/*.mp4
