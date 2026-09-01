@@ -53,6 +53,10 @@ function vitePluginStorageProxy(): Plugin {
 
 export default defineConfig({
   plugins: [react(), tailwindcss(), vitePluginStorageProxy()],
+  server: {
+    host: '0.0.0.0',
+    allowedHosts: ['.manus.computer'],
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

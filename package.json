@@ -5,7 +5,7 @@
   "type": "module",
   "description": "PELAGIA — deep ocean research scrollytelling landing page",
   "scripts": {
-    "dev": "node scripts/restore-idle-videos.mjs && vite",
+    "dev": "node scripts/restore-idle-videos.mjs && vite --host 0.0.0.0",
     "build": "node scripts/restore-idle-videos.mjs && tsc -b && vite build",
     "preview": "vite preview",
     "check": "tsc -b",
